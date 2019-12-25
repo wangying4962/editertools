@@ -1,10 +1,15 @@
 package com.study.editertools.controller;
 
+import com.study.editertools.entity.AnalysisResultDO;
+import com.study.editertools.entity.TaskDO;
 import com.study.editertools.service.StudentService;
+import com.study.editertools.service.TaskService;
+import com.study.editertools.utils.PdfUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,13 +18,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @Controller
 @RequestMapping("/editer")
 public class HomeController {
     @Autowired
-    private StudentService studentService;
+    private TaskService taskService;
 
     @GetMapping("/home")
     public String homePage() {
@@ -28,7 +34,7 @@ public class HomeController {
 
     @PostMapping("/upload")
     @ResponseBody
-    public void upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public ModelAndView upload(@RequestParam("file") MultipartFile file,ModelAndView modelAndView) throws IOException {
         String fileName = file.getOriginalFilename();
         String suffixName = fileName.substring(fileName.lastIndexOf("."));
         //生成文件名称通用方法
@@ -41,11 +47,35 @@ public class HomeController {
         Path path = Paths.get(newFileName);
         Files.write(path, bytes);
         File dest = path.toFile();
+        TaskDO taskDO = new TaskDO();
+        taskDO.setFileName(fileName);
+        taskDO.setAddress(dest.getAbsolutePath());
+        taskDO.setStatus(0);
+        taskService.addStudent(taskDO);
 
+        List<TaskDO> tasks = taskService.listTask();
+
+        modelAndView.addObject("tasks",tasks);
+        modelAndView.setViewName("/fileList");
+
+        return modelAndView;
     }
-    @GetMapping("/addUser")
-    public void addUser() {
-        studentService.addStudent();
+
+    @GetMapping("/analysis")
+    public ModelAndView analysis(@RequestParam Integer id,ModelAndView modelAndView) throws IOException {
+
+        TaskDO task = taskService.findById(id);
+        List<AnalysisResultDO> analysis = PdfUtil.analysis(task.getAddress());
+        for (AnalysisResultDO analysisResultDO : analysis) {
+            analysisResultDO.setTaskId(id);
+        }
+
+        //todo 入库
+
+        modelAndView.addObject("analys",analysis);
+        modelAndView.setViewName("/resultList");
+
+        return modelAndView;
     }
 
 }

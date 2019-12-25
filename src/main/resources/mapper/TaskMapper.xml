@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.editertools.dao.TaskDao">
+
+    <resultMap id="taskMap" type="com.study.editertools.entity.TaskDO">
+        <id column="id" property="id"></id>
+        <result column="file_name" property="fileName"></result>
+        <result column="address" property="address"></result>
+        <result column="result_mongo_id" property="resultMongoId"></result>
+        <result column="status" property="status"></result>
+    </resultMap>
+
+    <insert id="addTask" parameterType="com.study.editertools.entity.TaskDO">
+        insert into pdf_task
+        (`file_name`,address,status)
+        values (#{fileName},#{address},#{status});
+    </insert>
+
+    <select id="listTask" resultMap="taskMap">
+        select id,file_name,address,status from pdf_task;
+    </select>
+
+    <select id="findById" resultMap="taskMap">
+        select id,file_name,address,status from pdf_task where id = #{id};
+    </select>
+
+</mapper>

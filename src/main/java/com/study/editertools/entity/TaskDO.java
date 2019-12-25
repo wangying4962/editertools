@@ -1,4 +1,4 @@
-package com.study.editertools;
+package com.study.editertools.entity;
 
 import lombok.Data;
 
@@ -8,5 +8,5 @@ public class TaskDO {
     private String fileName;
     private String address;
     private Integer status;
-    private String result_mongo_id;
+    private String resultMongoId;
 }

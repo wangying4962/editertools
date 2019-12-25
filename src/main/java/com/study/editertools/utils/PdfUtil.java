@@ -4,36 +4,38 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
 import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy;
 import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
+import com.study.editertools.entity.AnalysisResultDO;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PdfUtil {
-    public static void main() throws IOException {
-        String fileName = "G:\\水浒传（改三校）.pdf";
+    public static List<AnalysisResultDO> analysis(String fileName) throws IOException {
         Map<String, Integer> allAnnotationMap = getAllAnnotation(fileName);
         PdfReader reader = new PdfReader(fileName);
         PdfReaderContentParser parser = new PdfReaderContentParser(reader);
         TextExtractionStrategy strategy;
+
+        List<AnalysisResultDO> result = new ArrayList<>();
+
         for (int page = 1; page <= reader.getNumberOfPages(); page++) {
             strategy = parser.processContent(page, new SimpleTextExtractionStrategy());
             String resultantText = strategy.getResultantText();
 
             resultantText = resultantText.replaceAll("\\n([a-z])\\n", "---Anno---");
 
-            checkPrefix(resultantText, page, '儿');
+            result.addAll(checkPrefix(resultantText, page, '儿'));
 
-            singleWord(resultantText, page);
+            result.addAll(singleWord(resultantText, page));
 
-            threeLinesForPage(resultantText, page);
+            result.addAll(threeLinesForPage(resultantText, page));
 
-            checkAnnotation(allAnnotationMap, resultantText, page);
+            result.addAll(checkAnnotation(allAnnotationMap, resultantText, page));
 
         }
+        return result;
 
     }
 
@@ -44,31 +46,47 @@ public class PdfUtil {
      * @param resultantText
      * @param page
      */
-    public static void checkPrefix(String resultantText, int page, char c) {
+    public static List<AnalysisResultDO> checkPrefix(String resultantText, int page, char c) {
+        List<AnalysisResultDO> result = new ArrayList<>();
         String[] lines = resultantText.split("\\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (line != null && line.length() != 0) {
                 if (line.charAt(0) == c) {
+                    AnalysisResultDO analysisResult = new AnalysisResultDO();
+                    analysisResult.setPage(page);
+                    analysisResult.setLine(i);
+                    analysisResult.setDescription("第" + page + "页，第" + i + "行，出现某一行第一个字是：\"" + c + "\"的地方");
+                    analysisResult.setKeyWord(c + "");
+                    result.add(analysisResult);
+
                     System.out.println("第" + page + "页，第" + i + "行，出现某一行第一个字是：\"" + c + "\"的地方");
                 }
             }
 
         }
+        return result;
     }
 
     /**
      * 单字符不能成一行
      */
-    public static void singleWord(String resultantText, int page) {
+    public static List<AnalysisResultDO> singleWord(String resultantText, int page) {
+        List<AnalysisResultDO> result = new ArrayList<>();
         String[] lines = resultantText.split("\\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (!line.equals(" ") && line.length() == 1) {
+                AnalysisResultDO analysisResult = new AnalysisResultDO();
+                analysisResult.setPage(page);
+                analysisResult.setLine(i);
+                analysisResult.setDescription("第" + page + "页，第" + i + "行，单字成行了");
+                result.add(analysisResult);
                 System.out.println("第" + page + "页，第" + i + "行，单字成行了");
             }
 
         }
+        return result;
 
     }
 
@@ -78,11 +96,17 @@ public class PdfUtil {
      * @param resultantText
      * @param page
      */
-    public static void threeLinesForPage(String resultantText, int page) {
+    public static List<AnalysisResultDO> threeLinesForPage(String resultantText, int page) {
         String[] lines = resultantText.split("\\n");
+        List<AnalysisResultDO> result = new ArrayList<>();
         if (!"".equals(resultantText) && lines.length <= 3) {
+            AnalysisResultDO analysisResult = new AnalysisResultDO();
+            analysisResult.setPage(page);
+            analysisResult.setDescription("第" + page + "页，只有3行");
+            result.add(analysisResult);
             System.out.println("第" + page + "页，只有3行");
         }
+        return result;
     }
 
     /**
@@ -124,8 +148,10 @@ public class PdfUtil {
         return map;
     }
 
-    public static void checkAnnotation(Map<String, Integer> annotationMap, String resultantText, int page) {
+    public static List<AnalysisResultDO> checkAnnotation(Map<String, Integer> annotationMap, String resultantText, int page) {
         Set<Map.Entry<String, Integer>> entries = annotationMap.entrySet();
+
+        List<AnalysisResultDO> result = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : entries) {
             String key = entry.getKey();//标注
             Integer value = entry.getValue();//标注所在的页码
@@ -142,11 +168,17 @@ public class PdfUtil {
             Matcher m = r.matcher(resultantText);
             if (m.find()) {
                 if (value > page) {
+                    AnalysisResultDO analysisResult = new AnalysisResultDO();
+                    analysisResult.setPage(page);
+                    analysisResult.setDescription("第" + value + "页标注:\"" + key + "\"在" + page + "页提前出现了");
+                    analysisResult.setKeyWord(key);
+                    result.add(analysisResult);
                     System.out.println("第" + value + "页标注:\"" + key + "\"在" + page + "页提前出现了");
                 }
 
             }
 
         }
+        return result;
     }
 }
