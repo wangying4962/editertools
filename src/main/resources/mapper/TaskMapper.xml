@@ -8,6 +8,7 @@
         <result column="address" property="address"></result>
         <result column="result_mongo_id" property="resultMongoId"></result>
         <result column="status" property="status"></result>
+        <result column="create_time" property="createTime"></result>
     </resultMap>
 
     <insert id="addTask" parameterType="com.study.editertools.entity.TaskDO">
@@ -17,7 +18,7 @@
     </insert>
 
     <select id="listTask" resultMap="taskMap">
-        select id,file_name,address,status from pdf_task;
+        select id,file_name,address,status,create_time from pdf_task order by create_time desc;
     </select>
 
     <select id="findById" resultMap="taskMap">

@@ -46,3 +46,6 @@ spring:
 mybatis:
   mapperLocations: classpath:mapper/*.xml
   typeAliasesPackage: com.study.editertools.dao
+
+server:
+  port: 80

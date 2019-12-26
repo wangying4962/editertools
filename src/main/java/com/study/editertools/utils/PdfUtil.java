@@ -6,6 +6,7 @@ import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy;
 import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
 import com.study.editertools.entity.AnalysisResultDO;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -13,12 +14,18 @@ import java.util.regex.Pattern;
 
 public class PdfUtil {
     public static List<AnalysisResultDO> analysis(String fileName) throws IOException {
+
+        List<AnalysisResultDO> result = new ArrayList<>();
+        File file = new File(fileName);
+        if (!file.exists()) {
+            return result;
+        }
+
         Map<String, Integer> allAnnotationMap = getAllAnnotation(fileName);
         PdfReader reader = new PdfReader(fileName);
         PdfReaderContentParser parser = new PdfReaderContentParser(reader);
         TextExtractionStrategy strategy;
 
-        List<AnalysisResultDO> result = new ArrayList<>();
 
         for (int page = 1; page <= reader.getNumberOfPages(); page++) {
             strategy = parser.processContent(page, new SimpleTextExtractionStrategy());

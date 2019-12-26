@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ public class HomeController {
 
     @PostMapping("/upload")
     @ResponseBody
-    public ModelAndView upload(@RequestParam("file") MultipartFile file,ModelAndView modelAndView) throws IOException {
+    public void upload(@RequestParam("file") MultipartFile file, HttpServletResponse response) throws IOException {
         String fileName = file.getOriginalFilename();
         String suffixName = fileName.substring(fileName.lastIndexOf("."));
         //生成文件名称通用方法
@@ -53,16 +54,27 @@ public class HomeController {
         taskDO.setStatus(0);
         taskService.addStudent(taskDO);
 
+//        List<TaskDO> tasks = taskService.listTask();
+//
+//        modelAndView.addObject("tasks", tasks);
+//        modelAndView.setViewName("/fileList");
+        response.sendRedirect("/editer/fileList");
+
+    }
+
+    @GetMapping("/fileList")
+    @ResponseBody
+    public ModelAndView fileList(ModelAndView modelAndView) {
         List<TaskDO> tasks = taskService.listTask();
 
-        modelAndView.addObject("tasks",tasks);
+        modelAndView.addObject("tasks", tasks);
         modelAndView.setViewName("/fileList");
 
         return modelAndView;
     }
 
     @GetMapping("/analysis")
-    public ModelAndView analysis(@RequestParam Integer id,ModelAndView modelAndView) throws IOException {
+    public ModelAndView analysis(@RequestParam Integer id, ModelAndView modelAndView) throws IOException {
 
         TaskDO task = taskService.findById(id);
         List<AnalysisResultDO> analysis = PdfUtil.analysis(task.getAddress());
@@ -72,7 +84,7 @@ public class HomeController {
 
         //todo 入库
 
-        modelAndView.addObject("analys",analysis);
+        modelAndView.addObject("analys", analysis);
         modelAndView.setViewName("/resultList");
 
         return modelAndView;

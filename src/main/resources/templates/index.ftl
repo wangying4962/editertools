@@ -5,9 +5,6 @@
     <title>Title</title>
 </head>
 <body>
-<form method="post" action="/editer/upload" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="提交">
-</form>
+    <a href="/editer/fileList">进入功能</a>
 </body>
 </html>
